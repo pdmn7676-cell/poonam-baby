@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>together♥ — Movie Night + Video Call</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0d16;--panel:#181824;--panel2:#222233;--line:#36364b;--pink:#ff719f;--purple:#aa96ff;--muted:#aaa8bd;--white:#f7f4ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0%,#302044 0,transparent 42%),var(--bg);color:var(--white);font:15px/1.5 Inter,system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:11px 16px;background:linear-gradient(110deg,var(--pink),#c18cff);color:#211323;font-weight:750}button.secondary{background:var(--panel2);color:var(--white);border:1px solid var(--line)}button:disabled{opacity:.5;cursor:not-allowed}
+.wrap{max-width:1180px;margin:auto;padding:24px 18px 45px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.brand{font-size:22px;font-weight:900}.brand span{color:var(--pink)}.status{font-size:12px;color:var(--muted)}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#777;margin-right:7px}.dot.on{background:#65dfa5}.hero{text-align:center;margin-bottom:25px}.eyebrow{color:var(--pink);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}.hero h1{font-size:clamp(30px,5vw,46px);margin:8px 0}.hero p,.muted{color:var(--muted)}.banner{padding:13px 15px;margin-bottom:16px;border-radius:13px;background:#211d31;border:1px solid #494064;font-size:13px}.banner button{margin-left:9px;padding:7px 11px;font-size:12px}
+.grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,.85fr);gap:17px}.panel{background:rgba(24,24,36,.96);border:1px solid var(--line);border-radius:19px;padding:17px;box-shadow:0 18px 50px #0003}h2{font-size:16px;margin:0 0 12px}.player{aspect-ratio:16/9;background:#050508;border-radius:13px;overflow:hidden;display:grid;place-items:center}.player video{width:100%;height:100%;object-fit:contain}.empty{text-align:center;color:var(--muted);padding:20px}.empty b{display:block;color:white;font-size:18px;margin-bottom:5px}
+.urlrow,.chatrow{display:flex;gap:8px;margin-top:12px}input{width:100%;min-width:0;background:#10101a;border:1px solid var(--line);border-radius:11px;padding:12px;color:white;outline:none}input:focus{border-color:var(--purple)}.hint{font-size:12px;color:var(--muted);margin-top:7px}.actions,.reactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.side{display:flex;flex-direction:column;gap:16px}
+.callgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.tile{position:relative;aspect-ratio:4/3;background:#08080d;border:1px solid var(--line);border-radius:13px;overflow:hidden;display:grid;place-items:center;color:var(--muted);font-size:12px}.tile video{width:100%;height:100%;object-fit:cover}.tile span{position:absolute;bottom:7px;left:8px;background:#0009;color:white;padding:3px 7px;border-radius:7px;font-size:11px}.callcontrols{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.callcontrols button{flex:1;min-width:100px}.roomline{display:flex;justify-content:space-between;align-items:center}.roomcode{color:var(--purple);font-weight:850;letter-spacing:2px}.people{display:flex;gap:7px;flex-wrap:wrap}.person{background:var(--panel2);border:1px solid var(--line);padding:6px 10px;border-radius:20px;font-size:12px}.chatlog{height:190px;overflow:auto;display:flex;flex-direction:column;gap:8px}.msg{background:var(--panel2);padding:8px 10px;border-radius:11px;max-width:95%;overflow-wrap:anywhere}.msg.self{align-self:flex-end;background:#3a2944}.msg small{display:block;color:var(--purple);font-weight:800}.reactions button{background:var(--panel2);border:1px solid var(--line);color:white;padding:7px 10px}.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+.modalback{position:fixed;inset:0;background:#05050bdc;display:none;place-items:center;padding:18px;z-index:5}.modalback.show{display:grid}.modal{width:min(470px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px}.modal p{font-size:13px;color:var(--muted)}.field{margin:12px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.wrap{padding:17px 12px 35px}.urlrow{flex-direction:column}.urlrow button{width:100%}}
+</style>
+</head>
+<body><div class="wrap">
+<header class="top"><div class="brand">together<span>♥</span></div><div class="status"><i class="dot" id="dot"></i><span id="status">Not connected</span></div></header>
+<section class="hero"><div class="eyebrow">your little online cinema</div><h1>Movie night, <span style="color:var(--pink)">together.</span></h1><p>Watch the movie and see each other at the same time.</p></section>
+<div class="banner" id="setupBanner"><b>Connect your room:</b> Add your Supabase project details to enable calls, chat and synchronized playback. <button id="openSettings">Set up</button></div>
+<main class="grid"><section class="panel">
+<h2>🎬 Shared movie</h2><div class="player"><div class="empty" id="empty"><b>🍿 Ready when you are</b>Paste a direct video-file link below.</div><video id="movie" controls playsinline preload="metadata" style="display:none"></video></div>
+<div class="urlrow"><input id="videoUrl" type="url" placeholder="Direct video URL ending in .mp4, .webm, etc."><button id="load">Load video</button></div><div class="hint">Use a direct video file URL. Both viewers need permission to access the same file.</div>
+<div class="actions"><button class="secondary" id="play">▶ Play</button><button class="secondary" id="pause">Ⅱ Pause</button><button class="secondary" id="invite">↗ Copy invite</button></div>
+<hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+<h2>💗 Your video call</h2><div class="callgrid">
+<div class="tile"><video id="localVideo" autoplay muted playsinline></video><span>You</span><small id="localPlaceholder">Camera is off</small></div>
+<div class="tile"><video id="remoteVideo" autoplay playsinline></video><span id="partnerLabel">Your partner</span><small id="remotePlaceholder">Waiting for your partner…</small></div>
+</div>
+<div class="callcontrols"><button id="startCall">Start camera & mic</button><button class="secondary" id="mute" disabled>Mute mic</button><button class="secondary" id="camera" disabled>Turn camera off</button><button class="secondary" id="endCall" disabled>End call</button></div>
+<div class="hint" id="callStatus">Allow camera and microphone access when your browser asks.</div>
+</section>
+<aside class="side">
+<section class="panel"><div class="roomline"><h2>Our room</h2><span class="roomcode" id="roomCode"></span></div><div class="hint" style="margin-bottom:12px">Share this invite link with your person.</div><div class="people" id="people"><span class="person">Just you for now</span></div></section>
+<section class="panel"><h2>Send a little love</h2><div class="reactions"><button data-reaction="❤️">❤️</button><button data-reaction="😘">😘</button><button data-reaction="🥹">🥹</button><button data-reaction="🍿">🍿</button><button data-reaction="😂">😂</button></div><div class="hint" id="reactionToast"></div></section>
+<section class="panel"><h2>Our chat 💬</h2><div class="chatlog" id="chatLog"></div><div class="chatrow"><input id="chatInput" placeholder="Say something sweet…" maxlength="500"><button id="send">Send</button></div></section>
+</aside></main><div class="foot">Made for two hearts, wherever they are. ♥</div></div>
+<div class="modalback" id="modal"><div class="modal"><h2>Connect your room ✨</h2><p>Enter your Supabase project URL and public anon/publishable key. Never put a service-role or secret key in browser code.</p><div class="field"><label>Supabase project URL</label><input id="sbUrl" placeholder="https://your-project.supabase.co"></div><div class="field"><label>Publishable / anon key</label><input id="sbKey" placeholder="sb_publishable_… or anon key"></div><div class="field"><label>Your display name</label><input id="name" placeholder="Your name" maxlength="30"></div><div class="actions"><button id="connect">Connect</button><button class="secondary" id="close">Cancel</button></div><p id="error" style="color:#ff9ab6"></p></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const params=new URLSearchParams(location.search);
+const room=(params.get('room')||Math.random().toString(36).slice(2,8)).toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,16)||'LOVE2026';
+$('roomCode').textContent=room;if(!params.get('room')){params.set('room',room);history.replaceState({},'',`${location.pathname}?${params}`);}
+const movie=$('movie');let client=null,channel=null,connected=false;
+let displayName=localStorage.getItem('together_name')||'Me';
+let localStream=null,pc=null,remotePeerId=null,peerId=sessionStorage.getItem('together_peer_id');
+if(!peerId){peerId=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2));sessionStorage.setItem('together_peer_id',peerId);}
+let polite=false,makingOffer=false,ignoreOffer=false,isSettingRemoteAnswerPending=false,queuedCandidates=[];
+$('name').value=displayName;
+
+function setStatus(ok,msg){$('dot').classList.toggle('on',ok);$('status').textContent=msg;$('setupBanner').style.display=ok?'none':'block';}
+function broadcast(event,payload){if(channel&&connected)channel.send({type:'broadcast',event,payload});}
+function showModal(v){$('modal').classList.toggle('show',v);}
+$('openSettings').onclick=()=>showModal(true);$('close').onclick=()=>showModal(false);
+
+function addMessage(name,message,self=false){const el=document.createElement('div');el.className='msg'+(self?' self':'');const who=document.createElement('small');who.textContent=name;const body=document.createElement('span');body.textContent=message;el.append(who,body);$('chatLog').append(el);$('chatLog').scrollTop=$('chatLog').scrollHeight;}
+
+function movieState(){return {url:movie.currentSrc||movie.src,time:Number.isFinite(movie.currentTime)?movie.currentTime:0,paused:movie.paused};}
+function applyMovieState(s){if(!s||!s.url)return;const changed=movie.src!==s.url;if(changed){movie.style.display='block';$('empty').style.display='none';movie.src=s.url;movie.load();movie.addEventListener('loadedmetadata',function once(){movie.removeEventListener('loadedmetadata',once);syncMovie(s);});}else syncMovie(s);}
+function syncMovie(s){try{if(Math.abs(movie.currentTime-(Number(s.time)||0))>1.5)movie.currentTime=Number(s.time)||0;}catch(e){}if(s.paused)movie.pause();else movie.play().catch(()=>{});}
+function loadMovie(url){try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))throw Error('Use an http or https URL.');movie.style.display='block';$('empty').style.display='none';movie.src=u.href;movie.load();$('videoUrl').value=u.href;broadcast('movie',{url:u.href,time:0,paused:true});$('reactionToast').textContent='Video loaded ♥';}catch(e){$('reactionToast').textContent=e.message||'Enter a valid URL.';}}
+$('load').onclick=()=>loadMovie($('videoUrl').value.trim());$('videoUrl').addEventListener('keydown',e=>{if(e.key==='Enter')$('load').click();});
+$('play').onclick=()=>{movie.play().catch(()=>{});broadcast('movie-state',{...movieState(),paused:false});};
+$('pause').onclick=()=>{movie.pause();broadcast('movie-state',{...movieState(),paused:true});};
+movie.addEventListener('play',()=>broadcast('movie-state',movieState()));movie.addEventListener('pause',()=>{if(movie.src)broadcast('movie-state',movieState());});movie.addEventListener('seeked',()=>{if(movie.src)broadcast('movie-state',movieState());});
+
+function setCallStatus(s){$('callStatus').textContent=s;}
+function setRemote(stream){$('remoteVideo').srcObject=stream;$('remotePlaceholder').style.display=stream?'none':'block';}
+function setLocal(stream){$('localVideo').srcObject=stream;$('localPlaceholder').style.display=stream?'none':'block';}
+function sendSignal(to,data){broadcast('rtc-signal',{from:peerId,to,data});}
+function closePeer(){if(pc){pc.ontrack=null;pc.onicecandidate=null;pc.onnegotiationneeded=null;pc.close();pc=null;}remotePeerId=null;setRemote(null);}
+
+function addLocalTracks(connection){
+ if(!localStream)return;
+ const existing=connection.getSenders().map(sender=>sender.track).filter(Boolean);
+ localStream.getTracks().forEach(track=>{
+  if(!existing.includes(track))connection.addTrack(track,localStream);
+ });
+}
+function createPeer(id){
+ if(pc&&remotePeerId===id){addLocalTracks(pc);return pc;}
+ if(pc)closePeer();
+ remotePeerId=id;polite=peerId>id;
+ const connection=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});
+ pc=connection;
+ addLocalTracks(connection);
+ connection.onicecandidate=e=>{if(e.candidate)sendSignal(id,{candidate:e.candidate});};
+ connection.ontrack=e=>{const stream=e.streams&&e.streams[0];if(stream)setRemote(stream);else{const current=$('remoteVideo').srcObject||new MediaStream();current.addTrack(e.track);setRemote(current);}setCallStatus('Connected — you can see and hear each other ♥');};
+ connection.onconnectionstatechange=()=>{const s=connection.connectionState;if(s==='connected')setCallStatus('Connected — enjoy your movie together ♥');else if(s==='connecting')setCallStatus('Connecting your call…');else if(s==='disconnected')setCallStatus('Call connection interrupted. Trying to recover…');else if(s==='failed')setCallStatus('Call failed. Check network permissions and try again.');else if(s==='closed')setCallStatus('Call ended.');};
+ connection.onnegotiationneeded=async()=>{
+  try{makingOffer=true;await connection.setLocalDescription();sendSignal(id,{description:connection.localDescription});}
+  catch(e){console.error('Negotiation error',e);setCallStatus('Could not start call negotiation.');}
+  finally{makingOffer=false;}
+ };
+ return connection;
+}
+
+async function handleSignal(message){
+ if(!message||message.to!==peerId||!message.from)return;
+ const id=message.from;const data=message.data||{};const connection=createPeer(id);
+ try{
+  if(data.description){
+   const description=data.description;
+   const readyForOffer=!makingOffer&&(connection.signalingState==='stable'||isSettingRemoteAnswerPending);
+   const offerCollision=description.type==='offer'&&!readyForOffer;
+   ignoreOffer=!polite&&offerCollision;
+   if(ignoreOffer)return;
+   isSettingRemoteAnswerPending=description.type==='answer';
+   await connection.setRemoteDescription(description);
+   isSettingRemoteAnswerPending=false;
+   while(queuedCandidates.length){const candidate=queuedCandidates.shift();await connection.addIceCandidate(candidate);}
+   if(description.type==='offer'){await connection.setLocalDescription();sendSignal(id,{description:connection.localDescription});}
+  }else if(data.candidate){
+   if(connection.remoteDescription)await connection.addIceCandidate(data.candidate);
+   else queuedCandidates.push(data.candidate);
+  }
+ }catch(e){console.warn('WebRTC signal error',e);setCallStatus('Call setup hiccup. Please try starting the call again.');}
+}
+
+async function startMedia(){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setCallStatus('Camera and microphone require HTTPS or localhost in a supported browser.');return;}
+ try{
+  localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  setLocal(localStream);$('startCall').disabled=true;$('mute').disabled=false;$('camera').disabled=false;$('endCall').disabled=false;
+  $('mute').textContent='Mute mic';$('camera').textContent='Turn camera off';
+  setCallStatus('Camera and microphone enabled. Waiting for your partner…');
+  if(remotePeerId)createPeer(remotePeerId);
+  const peers=getOtherPeers();if(peers.length)createPeer(peers[0]);
+ }catch(e){setCallStatus(e.name==='NotAllowedError'?'Permission denied. Allow camera and microphone in your browser settings.':e.message||'Could not access camera/microphone.');}
+}
+function getOtherPeers(){
+ if(!channel)return [];
+ const state=channel.presenceState(),ids=[];
+ Object.values(state).flat().forEach(p=>{if(p.peerId&&p.peerId!==peerId&&!ids.includes(p.peerId))ids.push(p.peerId);});
+ return ids;
+}
+$('startCall').onclick=startMedia;
+$('mute').onclick=()=>{if(!localStream)return;const t=localStream.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$('mute').textContent=t.enabled?'Mute mic':'Unmute mic';}};
+$('camera').onclick=()=>{if(!localStream)return;const t=localStream.getVideoTracks()[0];if(t){t.enabled=!t.enabled;$('camera').textContent=t.enabled?'Turn camera off':'Turn camera on';$('localPlaceholder').style.display=t.enabled?'none':'block';$('localPlaceholder').textContent=t.enabled?'Camera is off':'';}};
+$('endCall').onclick=()=>{if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}setLocal(null);closePeer();$('startCall').disabled=false;$('mute').disabled=true;$('camera').disabled=true;$('endCall').disabled=true;setCallStatus('Call ended. Start camera & mic when you are ready.');};
+
+async function connect(url,key){
+ if(!window.supabase)throw Error('Supabase library did not load. Check your internet connection.');
+ if(channel){await client.removeChannel(channel);channel=null;}
+ client=window.supabase.createClient(url,key);
+ channel=client.channel('watchparty:'+room,{config:{broadcast:{self:false},presence:{key:peerId}}});
+ channel.on('broadcast',{event:'chat'},({payload})=>addMessage(payload.name,payload.message,payload.name===displayName));
+ channel.on('broadcast',{event:'reaction'},({payload})=>$('reactionToast').textContent=payload.name+' sent '+payload.emoji);
+ channel.on('broadcast',{event:'movie'},({payload})=>applyMovieState(payload));
+ channel.on('broadcast',{event:'movie-state'},({payload})=>applyMovieState(payload));
+ channel.on('broadcast',{event:'rtc-signal'},({payload})=>handleSignal(payload));
+ channel.on('broadcast',{event:'state-request'},()=>{if(movie.src)broadcast('state-response',movieState());});
+ channel.on('broadcast',{event:'state-response'},({payload})=>{if(payload&&payload.url)applyMovieState(payload);});
+ channel.on('presence',{event:'sync'},()=>{
+  const state=channel.presenceState(),all=Object.values(state).flat();
+  const names=all.map(p=>p.name).filter(Boolean);$('people').replaceChildren();
+  (names.length?names:[displayName]).forEach(n=>{const el=document.createElement('span');el.className='person';el.textContent=n;$('people').append(el);});
+  const peers=getOtherPeers();if(peers.length){if(!pc||remotePeerId!==peers[0])createPeer(peers[0]);setCallStatus('Your partner is in the room. Start camera & mic to call.');}
+  else if(pc){closePeer();setCallStatus('Your partner left the room.');}
+ });
+ await new Promise((resolve,reject)=>{
+  channel.subscribe(async status=>{
+   if(status==='SUBSCRIBED'){connected=true;setStatus(true,'Connected · '+room);await channel.track({name:displayName,peerId,online_at:new Date().toISOString()});broadcast('state-request',{});resolve();}
+   else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')reject(Error('Could not join room: '+status));
+  });
+ });
+}
+$('connect').onclick=async()=>{
+ const url=$('sbUrl').value.trim(),key=$('sbKey').value.trim(),name=$('name').value.trim()||'Me';$('error').textContent='';
+ if(!url||!key){$('error').textContent='Please enter both Supabase fields.';return;}
+ displayName=name;localStorage.setItem('together_name',name);localStorage.setItem('together_supabase_url',url);localStorage.setItem('together_supabase_key',key);
+ $('connect').disabled=true;$('connect').textContent='Connecting…';
+ try{await connect(url,key);showModal(false);}catch(e){$('error').textContent=e.message||'Connection failed.';setStatus(false,'Connection failed');}
+ finally{$('connect').disabled=false;$('connect').textContent='Connect';}
+};
+$('send').onclick=()=>{const m=$('chatInput').value.trim();if(!m)return;addMessage(displayName,m,true);broadcast('chat',{name:displayName,message:m});$('chatInput').value='';};
+$('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('send').click();});
+document.querySelectorAll('[data-reaction]').forEach(b=>b.onclick=()=>{const emoji=b.dataset.reaction;$('reactionToast').textContent='You sent '+emoji;broadcast('reaction',{name:displayName,emoji});});
+$('invite').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('reactionToast').textContent='Invite link copied ♥';}catch(e){prompt('Copy invite link:',location.href);}};
+const savedUrl=localStorage.getItem('together_supabase_url'),savedKey=localStorage.getItem('together_supabase_key');
+if(savedUrl&&savedKey){$('sbUrl').value=savedUrl;$('sbKey').value=savedKey;connect(savedUrl,savedKey).catch(e=>setStatus(false,'Not connected'));}
+else{setStatus(false,'Not connected');showModal(true);}
+window.addEventListener('beforeunload',()=>{if(localStream)localStream.getTracks().forEach(t=>t.stop());if(pc)pc.close();});
+})();
+</script></body></html>
