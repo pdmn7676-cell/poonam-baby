@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>together♥ — Movie Night</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0d16;--panel:#181824;--panel2:#222233;--line:#36364b;--pink:#ff719f;--purple:#aa96ff;--muted:#aaa8bd;--white:#f7f4ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0%,#302044 0,transparent 42%),var(--bg);color:var(--white);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:11px 16px;background:linear-gradient(110deg,var(--pink),#c18cff);color:#211323;font-weight:750}button.secondary{background:var(--panel2);color:var(--white);border:1px solid var(--line)}button:disabled{opacity:.45;cursor:not-allowed}
+.wrap{max-width:1120px;margin:auto;padding:26px 20px 50px}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:34px}.brand{font-weight:900;font-size:22px;letter-spacing:-.7px}.brand span{color:var(--pink)}.status{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:#777}.dot.on{background:#65dfa5;box-shadow:0 0 12px #65dfa5}
+.hero{text-align:center;margin:0 auto 28px}.eyebrow{color:var(--pink);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.1;margin:9px 0}.hero p{color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:18px}.panel{background:rgba(24,24,36,.94);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 18px 50px #0003}.player-shell{background:#08080d;border-radius:14px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}.player-shell video{width:100%;height:100%;object-fit:contain;background:#050508}.empty{padding:25px;text-align:center;color:var(--muted)}.empty b{display:block;color:var(--white);font-size:18px;margin-bottom:6px}
+h2{font-size:16px;margin:0 0 13px}.urlrow{display:flex;gap:9px;margin-top:14px}.urlrow input,.chatrow input,.modal input{width:100%;min-width:0;background:#10101a;border:1px solid var(--line);border-radius:11px;padding:12px 13px;color:var(--white);outline:none}.urlrow input:focus,.chatrow input:focus,.modal input:focus{border-color:var(--purple)}
+.hint{font-size:12px;color:var(--muted);margin:8px 2px 0}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.side{display:flex;flex-direction:column;gap:18px}.roomline{display:flex;align-items:center;justify-content:space-between;gap:10px}.roomcode{font-weight:850;letter-spacing:2px;color:var(--purple);font-size:18px}.people{display:flex;flex-wrap:wrap;gap:8px}.person{background:var(--panel2);border:1px solid var(--line);padding:7px 10px;border-radius:20px;font-size:12px}.chatlog{height:230px;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:3px 2px 12px}.msg{background:var(--panel2);border-radius:12px;padding:8px 11px;max-width:95%;overflow-wrap:anywhere}.msg small{display:block;color:var(--purple);font-weight:800;margin-bottom:2px}.msg.self{align-self:flex-end;background:#3a2944}.chatrow{display:flex;gap:8px}.reactions{display:flex;gap:7px;flex-wrap:wrap}.reactions button{padding:7px 10px;background:var(--panel2);border:1px solid var(--line);color:white}
+.banner{margin:0 0 18px;padding:13px 15px;border-radius:13px;background:#211d31;border:1px solid #494064;color:#d7d0ed;font-size:13px}.banner strong{color:white}.banner button{margin-left:10px;padding:7px 10px;font-size:12px}.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:24px}
+.modalback{position:fixed;inset:0;background:#05050bcc;display:none;place-items:center;padding:20px;z-index:5}.modalback.show{display:grid}.modal{width:min(470px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px}.modal p{color:var(--muted);font-size:13px}.field{margin:13px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.top{margin-bottom:25px}.wrap{padding:18px 13px 35px}.urlrow{flex-direction:column}.urlrow button{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">together<span>♥</span></div>
+    <div class="status"><i class="dot" id="connectionDot"></i><span id="connectionText">Not connected</span></div>
+  </header>
+  <section class="hero">
+    <div class="eyebrow">your little online cinema</div>
+    <h1>Movie night, <span style="color:var(--pink)">together.</span></h1>
+    <p>Different places. Same movie. One cozy night.</p>
+  </section>
+
+  <div class="banner" id="setupBanner"><strong>Connect your room:</strong> Add your Supabase project details to enable live sync and chat.
+    <button id="openSettings">Set up</button>
+  </div>
+
+  <main class="grid">
+    <section class="panel">
+      <div class="player-shell" id="playerShell">
+        <div class="empty" id="emptyState"><b>🍿 Ready when you are</b>Paste a direct video-file link below to start your movie.</div>
+        <video id="video" controls playsinline preload="metadata" style="display:none"></video>
+      </div>
+      <div class="urlrow">
+        <input id="videoUrl" type="url" placeholder="Paste a direct video URL (e.g. https://example.com/movie.mp4)">
+        <button id="loadVideo">Load video</button>
+      </div>
+      <div class="hint">Works with direct video files such as .mp4, .webm and .ogg. A webpage link (such as a YouTube watch page or Google Drive preview) is not a direct video URL.</div>
+      <div class="actions">
+        <button class="secondary" id="playBtn">▶ Play</button>
+        <button class="secondary" id="pauseBtn">Ⅱ Pause</button>
+        <button class="secondary" id="copyInvite">↗ Copy invite link</button>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <div class="roomline"><h2>Our room</h2><span class="roomcode" id="roomCode">LOVE2026</span></div>
+        <div class="hint" style="margin:0 0 13px">Share this room with your person.</div>
+        <div class="people" id="people"><span class="person">Just you for now</span></div>
+      </section>
+      <section class="panel">
+        <h2>Send a little love</h2>
+        <div class="reactions">
+          <button data-reaction="❤️">❤️</button><button data-reaction="😘">😘</button><button data-reaction="🥹">🥹</button><button data-reaction="🍿">🍿</button><button data-reaction="😂">😂</button>
+        </div>
+        <div id="reactionToast" class="hint" aria-live="polite"></div>
+      </section>
+      <section class="panel">
+        <h2>Our chat 💬</h2>
+        <div class="chatlog" id="chatLog"></div>
+        <div class="chatrow"><input id="chatInput" placeholder="Say something sweet…" maxlength="500"><button id="sendChat">Send</button></div>
+      </section>
+    </aside>
+  </main>
+  <div class="foot">Made for two hearts, wherever they are. ♥</div>
+</div>
+
+<div class="modalback" id="settingsModal">
+  <div class="modal">
+    <h2>Connect your room ✨</h2>
+    <p>Enter your Supabase project URL and public anon/publishable key. Never use a service-role or secret key in a browser app.</p>
+    <div class="field"><label for="supabaseUrl">Supabase project URL</label><input id="supabaseUrl" placeholder="https://your-project.supabase.co"></div>
+    <div class="field"><label for="supabaseKey">Publishable / anon key</label><input id="supabaseKey" placeholder="sb_publishable_… or anon key"></div>
+    <div class="field"><label for="displayName">Your display name</label><input id="displayName" placeholder="Your name" maxlength="30"></div>
+    <div class="actions"><button id="saveSettings">Connect</button><button class="secondary" id="closeSettings">Cancel</button></div>
+    <p id="settingsError" style="color:#ff9ab6"></p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const room = (params.get('room') || Math.random().toString(36).slice(2,8)).toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,16) || 'LOVE2026';
+  $('roomCode').textContent = room;
+  if (!params.get('room')) { params.set('room', room); history.replaceState({}, '', `${location.pathname}?${params}`); }
+
+  const video = $('video');
+  let client = null, channel = null, connected = false, applyingRemote = false;
+  let displayName = localStorage.getItem('together_name') || 'Me';
+  let lastRemoteAt = 0, pendingState = null;
+  $('displayName').value = displayName;
+
+  function setConnection(ok, message) {
+    connected = ok;
+    $('connectionDot').classList.toggle('on', ok);
+    $('connectionText').textContent = message;
+    $('setupBanner').style.display = ok ? 'none' : 'block';
+  }
+  function showModal(show) { $('settingsModal').classList.toggle('show', show); }
+  $('openSettings').onclick = () => showModal(true);
+  $('closeSettings').onclick = () => showModal(false);
+
+  function addMessage(name, message, self=false) {
+    const item = document.createElement('div'); item.className = 'msg' + (self ? ' self' : '');
+    const who = document.createElement('small'); who.textContent = name;
+    const body = document.createElement('span'); body.textContent = message;
+    item.append(who, body); $('chatLog').append(item); $('chatLog').scrollTop = $('chatLog').scrollHeight;
+  }
+  function broadcast(type, payload) {
+    if (channel && connected) channel.send({type:'broadcast',event:type,payload});
+  }
+  function videoState() {
+    return {url:video.currentSrc || video.src, time:Number.isFinite(video.currentTime)?video.currentTime:0, paused:video.paused, sentAt:Date.now()};
+  }
+  function applyState(state) {
+    if (!state || !state.url) return;
+    applyingRemote = true;
+    if (video.src !== state.url) {
+      video.style.display = 'block'; $('emptyState').style.display = 'none';
+      video.src = state.url; video.load();
+      video.addEventListener('loadedmetadata', function once() {
+        video.removeEventListener('loadedmetadata', once);
+        syncTimeAndPlay(state);
+      });
+    } else syncTimeAndPlay(state);
+  }
+  function syncTimeAndPlay(state) {
+    const target = Math.max(0, Number(state.time)||0);
+    try { if (Math.abs(video.currentTime-target) > 1.5) video.currentTime = target; } catch(e) {}
+    if (state.paused) video.pause();
+    else video.play().catch(()=>{ $('reactionToast').textContent='Tap Play once to allow playback in your browser.'; });
+    setTimeout(()=>{applyingRemote=false;},500);
+  }
+  function loadUrl(url, shouldBroadcast=true) {
+    try {
+      const parsed = new URL(url);
+      if (!['http:','https:'].includes(parsed.protocol)) throw new Error('Use an http or https video URL.');
+      video.style.display='block'; $('emptyState').style.display='none';
+      video.src=parsed.href; video.load(); $('videoUrl').value=parsed.href;
+      if (shouldBroadcast) broadcast('video',{url:parsed.href,time:0,paused:true,sentAt:Date.now()});
+      $('reactionToast').textContent='Video loaded. Press play when you’re ready ♥';
+    } catch(e) { $('reactionToast').textContent=e.message || 'Please enter a valid video URL.'; }
+  }
+  $('loadVideo').onclick=()=>loadUrl($('videoUrl').value.trim());
+  $('videoUrl').addEventListener('keydown',e=>{if(e.key==='Enter') $('loadVideo').click();});
+  $('playBtn').onclick=()=>{video.play().catch(()=>{}); broadcast('playback',{...videoState(),paused:false});};
+  $('pauseBtn').onclick=()=>{video.pause(); broadcast('playback',{...videoState(),paused:true});};
+  video.addEventListener('play',()=>{if(!applyingRemote) broadcast('playback',videoState());});
+  video.addEventListener('pause',()=>{if(!applyingRemote && video.src) broadcast('playback',videoState());});
+  video.addEventListener('seeked',()=>{if(!applyingRemote && video.src) broadcast('playback',videoState());});
+
+  async function connect(url,key) {
+    if (!window.supabase) throw new Error('Supabase library did not load. Check your internet connection.');
+    if (channel) { await client.removeChannel(channel); channel=null; }
+    client = window.supabase.createClient(url,key);
+    channel = client.channel('watchparty:'+room,{config:{broadcast:{self:false},presence:{key:crypto.randomUUID ? crypto.randomUUID() : String(Math.random())}}});
+    channel.on('broadcast',{event:'chat'},({payload})=>addMessage(payload.name,payload.message,payload.name===displayName));
+    channel.on('broadcast',{event:'reaction'},({payload})=>{$('reactionToast').textContent=payload.name+' sent '+payload.emoji;});
+    channel.on('broadcast',{event:'video'},({payload})=>{if(payload && payload.url) applyState(payload);});
+    channel.on('broadcast',{event:'playback'},({payload})=>{if(payload && payload.url) applyState(payload); else if(payload){ if(payload.paused) video.pause(); else video.play().catch(()=>{}); }});
+    channel.on('broadcast',{event:'state-request'},()=>{if(video.src) broadcast('state-response',videoState());});
+    channel.on('broadcast',{event:'state-response'},({payload})=>{if(payload && payload.url && Date.now()-lastRemoteAt>1200){lastRemoteAt=Date.now();applyState(payload);}});
+    channel.on('presence',{event:'sync'},()=>{
+      const state=channel.presenceState();
+      const names=Object.values(state).flat().map(x=>x.name).filter(Boolean);
+      $('people').replaceChildren();
+      (names.length?names:[displayName]).forEach(n=>{const el=document.createElement('span');el.className='person';el.textContent=n; $('people').append(el);});
+      if(names.length>1) broadcast('state-request',{});
+    });
+    await new Promise((resolve,reject)=>{
+      channel.subscribe(async status=>{
+        if(status==='SUBSCRIBED'){
+          setConnection(true,'Connected · Room '+room);
+          await channel.track({name:displayName,online_at:new Date().toISOString()});
+          broadcast('state-request',{});
+          resolve();
+        } else if(status==='CHANNEL_ERROR' || status==='TIMED_OUT' || status==='CLOSED') reject(new Error('Could not join room: '+status));
+      });
+    });
+  }
+  $('saveSettings').onclick=async()=>{
+    const url=$('supabaseUrl').value.trim(), key=$('supabaseKey').value.trim(), name=$('displayName').value.trim()||'Me';
+    $('settingsError').textContent='';
+    if(!url || !key){$('settingsError').textContent='Please enter both Supabase fields.';return;}
+    displayName=name; localStorage.setItem('together_name',name);
+    localStorage.setItem('together_supabase_url',url); localStorage.setItem('together_supabase_key',key);
+    $('saveSettings').disabled=true; $('saveSettings').textContent='Connecting…';
+    try { await connect(url,key); showModal(false); }
+    catch(e){$('settingsError').textContent=e.message || 'Connection failed.';setConnection(false,'Connection failed');}
+    finally {$('saveSettings').disabled=false;$('saveSettings').textContent='Connect';}
+  };
+  $('sendChat').onclick=()=>{
+    const message=$('chatInput').value.trim(); if(!message)return;
+    addMessage(displayName,message,true); broadcast('chat',{name:displayName,message}); $('chatInput').value='';
+  };
+  $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter') $('sendChat').click();});
+  document.querySelectorAll('[data-reaction]').forEach(btn=>btn.onclick=()=>{
+    const emoji=btn.dataset.reaction; $('reactionToast').textContent='You sent '+emoji;
+    broadcast('reaction',{name:displayName,emoji});
+  });
+  $('copyInvite').onclick=async()=>{
+    const link=location.href;
+    try {await navigator.clipboard.writeText(link);$('reactionToast').textContent='Invite link copied! Send it to your person ♥';}
+    catch(e){prompt('Copy this invite link:',link);}
+  };
+
+  const savedUrl=localStorage.getItem('together_supabase_url'), savedKey=localStorage.getItem('together_supabase_key');
+  if(savedUrl && savedKey){$('supabaseUrl').value=savedUrl;$('supabaseKey').value=savedKey;connect(savedUrl,savedKey).catch(e=>{setConnection(false,'Not connected');$('settingsError').textContent=e.message;});}
+  else {setConnection(false,'Not connected');showModal(true);}
+})();
+</script>
+</body>
+</html>
